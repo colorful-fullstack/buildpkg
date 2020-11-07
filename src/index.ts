@@ -51,8 +51,10 @@ function registPackage(filePath: string) {
     process.chdir(args.repo)
     zstList.forEach((file: string) => {
         fs.copyFileSync(`${filePath}/${file}`, `${args.repo}/${file}`)
+        shell.exec(`gpg --detach-sign ${file}`);
         if (shell.exec(`repo-add -R -p ${args.repoName}.db.tar.gz ${file}`).code !== 0) {
             fs.rmSync(file);
+            fs.rmSync(`${file}.sig`)
             throw("cannot register package");
         }
     });
