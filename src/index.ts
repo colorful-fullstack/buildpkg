@@ -110,6 +110,9 @@ interface TaskResult {
 function* generate() {
     for (let repo of repoList) {
         const path = `${args.dir}/${repo}`;
+        if (!fs.lstatSync(path).isDirectory()) {
+            continue;
+        }
         yield (): TaskResult => {
             cleanPackageDir(path);
             const result = build(path);
