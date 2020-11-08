@@ -66,7 +66,7 @@ function cleanPackageDir(dir: string) {
     const list = fs.readdirSync(dir);
     list.forEach((file: string) => {
         if (path.extname(file) === ".zst") {
-            fs.rmSync(file);
+            fs.rmSync(`${dir}/${file}`);
         }
     });
 
