@@ -83,7 +83,7 @@ function build(path: string): boolean {
         return shell.exec(`makepkg -s`).code == 0;
     }
     else {
-        return shell.exec(`makechrootpkg -u -c -r ${args.chroot} -C pacman`).code == 0;
+        return shell.exec(`makechrootpkg -u -c -r ${args.chroot} -C ${args.pacman}`).code == 0;
     }
 }
 
