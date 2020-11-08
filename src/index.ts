@@ -45,23 +45,34 @@ function registPackage(filePath: string) {
     let zstList: string[] = [];
     files.forEach((file: string) => {
         if (path.extname(file) === ".zst") {
-            zstList.push(file)
+            zstList.push(file);
         }
     });
     process.chdir(args.repo)
     zstList.forEach((file: string) => {
-        fs.copyFileSync(`${filePath}/${file}`, `${args.repo}/${file}`)
-        shell.exec(`gpg --detach-sign ${file}`);
-        if (shell.exec(`repo-add -R -p ${args.repoName}.db.tar.gz ${file}`).code !== 0) {
-            fs.rmSync(file);
-            fs.rmSync(`${file}.sig`)
-            throw("cannot register package");
+        if (!fs.existsSync(`${args.repo}/${file}`)) {
+            fs.copyFileSync(`${filePath}/${file}`, `${args.repo}/${file}`);
+            shell.exec(`gpg --detach-sign ${file}`);
+            if (shell.exec(`repo-add -R -p ${args.repoName}.db.tar.gz ${file}`).code !== 0) {
+                fs.rmSync(file);
+                fs.rmSync(`${file}.sig`);
+                throw ("cannot register package");
+            }
         }
     });
 }
 
-function cleanPackageDir(path: string) {
+function cleanPackageDir(dir: string) {
+    const list = fs.readdirSync(dir);
+    list.forEach((file: string) => {
+        if (path.extname(file) === ".zst") {
+            fs.rmSync(file);
+        }
+    });
 
+    if (fs.existsSync(`${dir}/src`)) {
+        fs.rmdirSync(`${dir}/src`)
+    }
 }
 
 function build(path: string): boolean {
@@ -128,6 +139,7 @@ function* generate() {
 }
 
 if (isOnlyPackge) {
+    cleanPackageDir(args.dir);
     build(args.dir);
     registPackage(args.dir);
     exit(0);
