@@ -32,7 +32,7 @@ function initChroot() {
 }
 
 function updateRepo() {
-    shell.exec(`arch-nspawn -C ${args.pacman} ${args.chroot}/root pacman -Syyu`)
+    shell.exec(`arch-nspawn -C ${args.pacman} ${args.chroot}/root pacman -Syy`)
 }
 
 function uploadgit() {
