@@ -5,6 +5,7 @@ import yargs from 'yargs';
 import fs from 'fs';
 import { exit, openStdin } from 'process';
 import shell from 'shelljs';
+import readline from 'readline';
 
 interface Arguments {
     [x: string]: unknown;
@@ -33,6 +34,30 @@ function initChroot() {
 
 function updateRepo() {
     shell.exec(`arch-nspawn -C ${args.pacman} ${args.chroot}/root pacman -Syy`)
+}
+
+function checkVersion(repo: string): boolean {
+    const currentDir = process.cwd();
+    process.chdir(`${args.repo}/${repo}`)
+    shell.exec(`makepkg -o -d`);
+
+    const fileStream = fs.createReadStream(`${args.repo}/${repo}/PKGBUILD`);
+    const rl = readline.createInterface({
+        input: fileStream,
+        crlfDelay: Infinity
+    });
+
+    let v = "";
+    rl.on('line', (line) => {
+        if (line.startsWith("pkgver")) {
+            v = line.substr(7, line.length);
+            return;
+        }
+    });
+
+    const version = shell.exec(`pacman -Q ${repo}`).stdout;
+
+    return v !== version;
 }
 
 function uploadgit() {
@@ -150,6 +175,9 @@ while (true) {
     const result = repoTasks.next();
     if (result.done) {
         break;
+    }
+    if (!checkVersion(result.value.name)) {
+        continue;
     }
     const value = result.value();
     if (!value.result && !args.force) {
