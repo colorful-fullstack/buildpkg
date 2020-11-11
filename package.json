@@ -20,9 +20,11 @@
   },
   "homepage": "https://github.com/colorful-fullstack/buildpkg#readme",
   "devDependencies": {
+    "@types/n-readlines": "^1.0.1",
     "@types/node": "^14.14.6",
     "@types/shelljs": "^0.8.8",
     "@types/yargs": "^15.0.9",
+    "n-readlines": "^1.0.0",
     "path": "^0.12.7",
     "shelljs": "^0.8.4",
     "ts-loader": "^8.0.10",
