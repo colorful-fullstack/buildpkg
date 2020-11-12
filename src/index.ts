@@ -60,7 +60,7 @@ function checkVersion(path: string): boolean {
         }
     }
 
-    const stdout = shell.exec(`pacman -Q ${pkgname}`, {silent: true}).stdout;
+    const stdout = shell.exec(`pacman -Q ${pkgname}`, { silent: true }).stdout;
     return `${pkgname} ${pkgver}-1` !== stdout.replace(/\n/g, '');;
 }
 
@@ -83,8 +83,8 @@ function registPackage(filePath: string) {
             fs.copyFileSync(`${filePath}/${file}`, `${args.repo}/${file}`);
             shell.exec(`gpg --detach-sign ${file}`);
             if (shell.exec(`repo-add -R -p ${args.repoName}.db.tar.gz ${file}`).code !== 0) {
-                fs.rmSync(file);
-                fs.rmSync(`${file}.sig`);
+                fs.rmSync(file, { recursive: true, force: true });
+                fs.rmSync(`${file}.sig`, { recursive: true, force: true });
                 throw ("cannot register package");
             }
         }
@@ -95,12 +95,12 @@ function cleanPackageDir(dir: string) {
     const list = fs.readdirSync(dir);
     list.forEach((file: string) => {
         if (path.extname(file) === ".zst") {
-            fs.rmSync(`${dir}/${file}`);
+            fs.rmSync(`${dir}/${file}`, { recursive: true, force: true });
         }
     });
 
     if (fs.existsSync(`${dir}/src`)) {
-        fs.rmdirSync(`${dir}/src`)
+        fs.rmdirSync(`${dir}/src`, { recursive: true })
     }
 }
 
@@ -183,9 +183,6 @@ while (true) {
     const result = repoTasks.next();
     if (result.done) {
         break;
-    }
-    if (!checkVersion(result.value.name)) {
-        continue;
     }
     const value = result.value();
     if (!value.result && !args.force) {
