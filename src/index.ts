@@ -177,3 +177,22 @@ if (isOnlyPackge) {
     registPackage(args.dir);
     exit(0);
 }
+
+const repoTasks = generate();
+while (true) {
+    const result = repoTasks.next();
+    if (result.done) {
+        break;
+    }
+    if (!checkVersion(result.value.name)) {
+        continue;
+    }
+    const value = result.value();
+    if (!value.result && !args.force) {
+        throw (`${value.repo} not build success!`);
+        exit(-1);
+    }
+    if (value.result) {
+        registPackage(value.path);
+    }
+}
