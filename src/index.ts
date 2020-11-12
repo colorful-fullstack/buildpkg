@@ -33,12 +33,12 @@ function initChroot() {
 }
 
 function updateRepo() {
-    shell.exec(`arch-nspawn -C ${args.pacman} ${args.chroot}/root pacman -Syy`)
+    shell.exec(`arch-nspawn -C ${args.pacman} ${args.chroot}/root pacman -Syyu --noconfirm`)
 }
 
 function checkVersion(path: string): boolean {
     process.chdir(path)
-    shell.exec(`makepkg -o -d`, { silent: true });
+    shell.exec(`makepkg -o`, { silent: true });
 
     const fileStream = new readline(`${path}/PKGBUILD`);
     let pkgver = "";
@@ -105,10 +105,6 @@ function cleanPackageDir(dir: string) {
 }
 
 function build(path: string): boolean {
-    if (!checkVersion(path)) {
-        return false;
-    }
-
     process.chdir(path);
     shell.exec(`git checkout -- .`);
     shell.exec(`git pull -f`);
@@ -161,7 +157,10 @@ function* generate() {
         }
         yield (): TaskResult => {
             cleanPackageDir(path);
-            const result = build(path);
+            let result = false;
+            if (checkVersion(path)) {
+                result = build(path);
+            }
             return {
                 repo,
                 path,
